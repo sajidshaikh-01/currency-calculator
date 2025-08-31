@@ -231,24 +231,3 @@ git push
 ```bash
 git tag -a v1.0 -m "v1.0"
 git push origin v1.0
-```
-
----
-
-## Troubleshooting / common issues
-
-* **Push rejected / authentication failed**: Use `gh auth login`, create a PAT or set up SSH keys.
-* **Line endings issues (Windows/WSL)**: Run `git config --global core.autocrlf true` on Windows and `input` on Linux/WSL depending on preference.
-* **Large files**: If you accidentally committed big files, use `git rm --cached <file>` then add to `.gitignore`.
-
----
-
-## What I can do next
-
-* Create the actual `.gitignore` file in your project and add it to the repo.
-* Create a `.github/workflows/ci.yml` GitHub Actions file that builds Docker images or runs simple lint/tests.
-* Create the remote repo for you (if you provide your GitHub username and allow me to produce `gh` commands for you to run).
-
----
-
-Happy to walk you through any of the options interactively — tell me which option you prefer (Web UI / `gh` CLI / SSH), and I'll give the exact copy-paste commands with your GitHub username filled in.
