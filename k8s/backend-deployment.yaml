@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currency-backend
+  namespace: currency-app
+  labels:
+    app: currency-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: currency-backend
+  template:
+    metadata:
+      labels:
+        app: currency-backend
+    spec:
+      containers:
+      - name: backend
+        image: REPLACE_IMAGE_BACKEND
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
