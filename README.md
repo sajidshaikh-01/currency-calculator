@@ -66,6 +66,14 @@ docker run -p 8080:80 currency-frontend\:local
 
 ```
 
+### Full stack (Docker Compose)
+```
+docker compose up --build
+
+# frontend: http://localhost:8080
+# backend: http://localhost:3000/healthz
+```
+
 ## Deploy to Kubernetes (short)
 ```
 
@@ -81,6 +89,10 @@ kubectl apply -f k8s/frontend-service.yaml
 kubectl apply -f k8s/ingress.yaml
 
 ```
+
+## CI (GitHub Actions)
+- Runs backend unit tests with `node --test`.
+- Builds backend and frontend Docker images to validate Dockerfiles.
 
 ## Useful commands
 ```
