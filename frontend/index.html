@@ -2,46 +2,223 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Currency Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    label, select, input { margin: 6px; }
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --border: #e2e8f0;
+      --error: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+
+    main {
+      width: min(680px, 100%);
+      background: var(--card);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+
+    p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    select,
+    input {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    button {
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 20px rgba(37, 99, 235, 0.2);
+    }
+
+    .result {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .result strong {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .error {
+      color: var(--error);
+      font-weight: 600;
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <h2>Currency Calculator (K8s demo)</h2>
-  <label>From:
-    <select id="from">
-      <option>USD</option><option>EUR</option><option>INR</option><option>GBP</option><option>JPY</option>
-    </select>
-  </label>
-  <label>To:
-    <select id="to">
-      <option>INR</option><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option>
-    </select>
-  </label>
-  <label>Amount:
-    <input id="amount" type="number" value="1" />
-  </label>
-  <button id="go">Convert</button>
-  <pre id="out"></pre>
+  <main>
+    <h1>Currency Calculator</h1>
+    <p>Convert between popular currencies instantly. Powered by a lightweight Node.js API.</p>
+
+    <form id="converter">
+      <div class="row">
+        <label>
+          From
+          <select id="from">
+            <option>USD</option><option>EUR</option><option>INR</option><option>GBP</option><option>JPY</option>
+          </select>
+        </label>
+        <label>
+          To
+          <select id="to">
+            <option>INR</option><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option>
+          </select>
+        </label>
+        <label>
+          Amount
+          <input id="amount" type="number" min="0" step="0.01" value="1" />
+        </label>
+      </div>
+      <button id="go" type="submit">Convert</button>
+    </form>
+
+    <section class="result" id="result">
+      <strong id="result-value">Ready to convert.</strong>
+      <div class="meta" id="result-meta">Choose currencies and enter an amount.</div>
+    </section>
+
+    <div class="footer">Tip: The backend supports custom API endpoints via the EXCHANGE_API_URL environment variable.</div>
+  </main>
 
   <script>
-    document.getElementById('go').onclick = async () => {
-      const from = document.getElementById('from').value;
-      const to = document.getElementById('to').value;
-      const amount = document.getElementById('amount').value;
-      const out = document.getElementById('out');
-      out.textContent = 'Loading...';
+    const form = document.getElementById('converter');
+    const fromSelect = document.getElementById('from');
+    const toSelect = document.getElementById('to');
+    const amountInput = document.getElementById('amount');
+    const resultValue = document.getElementById('result-value');
+    const resultMeta = document.getElementById('result-meta');
+    const submitButton = document.getElementById('go');
+
+    const setStatus = (value, meta, isError = false) => {
+      resultValue.textContent = value;
+      resultValue.classList.toggle('error', isError);
+      resultMeta.textContent = meta;
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const from = fromSelect.value;
+      const to = toSelect.value;
+      const amount = Number(amountInput.value);
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        setStatus('Please enter a valid amount.', 'Amounts must be greater than zero.', true);
+        return;
+      }
+
+      setStatus('Converting...', 'Fetching the latest exchange rate.');
+      submitButton.disabled = true;
+
       try {
         const res = await fetch(`/api/convert?from=${from}&to=${to}&amount=${amount}`);
-        if (!res.ok) throw new Error('Bad response');
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Bad response');
+        }
         const data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
+        const converted = data.result ?? data.info?.rate * amount;
+        const rate = data.info?.rate;
+        const formatted = Number(converted).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 4,
+        });
+
+        setStatus(`${formatted} ${to}`, `Rate: 1 ${from} = ${rate?.toFixed?.(4) ?? rate} ${to}`);
       } catch (e) {
-        out.textContent = 'Error: ' + e.message;
+        setStatus('Something went wrong.', e.message || 'Unable to fetch conversion.', true);
+      } finally {
+        submitButton.disabled = false;
       }
-    };
+    });
   </script>
 </body>
 </html>
