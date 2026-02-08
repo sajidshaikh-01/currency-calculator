@@ -151,8 +151,6 @@ build/
 
 ````
 
----
-
 ## Step-by-step: push this project to GitHub
 
 > Make sure you have `git` installed and configured locally:
