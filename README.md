@@ -238,6 +238,9 @@ git commit -m "Describe change"
 git push
 ```
 
+
+
+...
 ### 6) Optional: create a release or tag
 
 ```bash
